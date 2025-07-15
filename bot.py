@@ -214,8 +214,8 @@ async def send_telegram_message(message: str) -> bool:
         # 直接使用全局bot实例
         bot = Bot(token=TELEGRAM_BOT_TOKEN)
         
-        # 使用异步方式发送消息
-        await bot.send_message(
+        # 在 python-telegram-bot 13.x 中，send_message 是同步的
+        bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
             text=message,
             parse_mode="Markdown"
@@ -251,23 +251,28 @@ async def tradingview_webhook(request: Request, secret: Optional[str] = None):
         # 获取请求体
         body = await request.body()
         
+        # 记录收到的请求
+        logger.info(f"收到webhook请求，大小: {len(body)} 字节")
+        
         # 生成消息哈希用于去重
         message_hash = hashlib.md5(body).hexdigest()
         current_time = datetime.now()
         
-        # 检查是否是重复消息（5秒内的相同消息视为重复）
+        # 检查是否是重复消息（10秒内的相同消息视为重复）
         if message_hash in message_timestamps:
             last_time = message_timestamps[message_hash]
-            if current_time - last_time < timedelta(seconds=5):
-                logger.info(f"忽略重复消息: {message_hash}")
+            time_diff = (current_time - last_time).total_seconds()
+            if time_diff < 10:  # 增加到10秒
+                logger.warning(f"忽略重复消息 (间隔{time_diff:.1f}秒): {message_hash[:8]}...")
                 return JSONResponse(content={"status": "ignored", "message": "重复消息已忽略"})
         
         # 更新消息时间戳
         message_timestamps[message_hash] = current_time
+        logger.info(f"处理新消息: {message_hash[:8]}...")
         
-        # 清理过期的时间戳（超过1分钟的）
+        # 清理过期的时间戳（超过5分钟的）
         expired_hashes = [h for h, t in message_timestamps.items() 
-                         if current_time - t > timedelta(minutes=1)]
+                         if current_time - t > timedelta(minutes=5)]
         for h in expired_hashes:
             del message_timestamps[h]
         
