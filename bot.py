@@ -49,6 +49,15 @@ app = FastAPI(title="TradingView到Telegram转发机器人")
 # 创建全局的异步Telegram机器人实例
 telegram_bot = None
 
+# 添加消息去重缓存
+from collections import deque
+from datetime import datetime, timedelta
+import hashlib
+
+# 存储最近的消息哈希，避免重复
+recent_messages = deque(maxlen=100)
+message_timestamps = {}
+
 async def get_telegram_bot():
     """获取或创建Telegram机器人实例"""
     global telegram_bot
@@ -242,6 +251,26 @@ async def tradingview_webhook(request: Request, secret: Optional[str] = None):
         # 获取请求体
         body = await request.body()
         
+        # 生成消息哈希用于去重
+        message_hash = hashlib.md5(body).hexdigest()
+        current_time = datetime.now()
+        
+        # 检查是否是重复消息（5秒内的相同消息视为重复）
+        if message_hash in message_timestamps:
+            last_time = message_timestamps[message_hash]
+            if current_time - last_time < timedelta(seconds=5):
+                logger.info(f"忽略重复消息: {message_hash}")
+                return JSONResponse(content={"status": "ignored", "message": "重复消息已忽略"})
+        
+        # 更新消息时间戳
+        message_timestamps[message_hash] = current_time
+        
+        # 清理过期的时间戳（超过1分钟的）
+        expired_hashes = [h for h, t in message_timestamps.items() 
+                         if current_time - t > timedelta(minutes=1)]
+        for h in expired_hashes:
+            del message_timestamps[h]
+        
         # 尝试解析JSON
         try:
             alert_data = json.loads(body)
@@ -311,4 +340,4 @@ if __name__ == "__main__":
     print("="*50 + "\n")
     
     logger.info(f"启动服务器在 {HOST}:{PORT}")
-    uvicorn.run("bot:app", host=HOST, port=PORT, reload=True)
+    uvicorn.run("bot:app", host=HOST, port=PORT, reload=False)
