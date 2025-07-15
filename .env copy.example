@@ -1,0 +1,12 @@
+# Telegram Bot Token (从BotFather获取)
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+
+# Telegram群组ID (可以是群组ID或用户ID)
+TELEGRAM_CHAT_ID=your_telegram_chat_id_here
+
+# 用于TradingView Webhook的密钥 (用于验证请求)
+WEBHOOK_SECRET=your_webhook_secret_here
+
+# 服务器配置
+HOST=0.0.0.0
+PORT=8000

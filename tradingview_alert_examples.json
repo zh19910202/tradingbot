@@ -1,0 +1,40 @@
+[
+  {
+    "description": "基本警报示例",
+    "payload": {
+      "ticker": "BTCUSDT",
+      "strategy": "均线交叉策略",
+      "price": 45000.50,
+      "action": "BUY"
+    }
+  },
+  {
+    "description": "带有自定义消息的警报示例",
+    "payload": {
+      "message": "🚨 BTCUSDT 触发警报！当前价格: 45000.50，动作: BUY"
+    }
+  },
+  {
+    "description": "详细策略警报示例",
+    "payload": {
+      "ticker": "ETHUSDT",
+      "strategy": "RSI超买超卖",
+      "price": 3200.75,
+      "action": "SELL",
+      "rsi": 78.5,
+      "timeframe": "1h",
+      "notes": "RSI超过70，可能超买"
+    }
+  },
+  {
+    "description": "TradingView警报变量示例",
+    "tradingview_format": {
+      "ticker": "{{ticker}}",
+      "strategy": "{{strategy.order.comment}}",
+      "price": "{{close}}",
+      "action": "{{strategy.order.action}}",
+      "volume": "{{strategy.order.contracts}}",
+      "time": "{{time}}"
+    }
+  }
+]

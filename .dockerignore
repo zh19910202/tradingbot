@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# 环境文件
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# 测试文件
+test_*.py
+*_test.py
+
+# 文档
+*.md
+docs/
+
+# 日志
+*.log
+logs/
+
+# 其他
+.dockerignore
+Dockerfile
+docker-compose.yml
+cloudbuild.yaml

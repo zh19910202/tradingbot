@@ -1,0 +1,31 @@
+# 使用 Cloud Build 自动构建和部署到 Cloud Run
+steps:
+  # 构建 Docker 镜像
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/tradingbot:$COMMIT_SHA', '.']
+  
+  # 推送镜像到 Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/tradingbot:$COMMIT_SHA']
+  
+  # 部署到 Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'tradingbot'
+      - '--image=gcr.io/$PROJECT_ID/tradingbot:$COMMIT_SHA'
+      - '--region=asia-east1'  # 可以改成你想要的区域
+      - '--platform=managed'
+      - '--allow-unauthenticated'  # webhook 需要公开访问
+      - '--port=8000'
+      - '--memory=256Mi'
+      - '--cpu=1'
+      - '--timeout=60s'
+      - '--concurrency=1000'
+      - '--max-instances=10'
+
+# 配置镜像
+images:
+  - 'gcr.io/$PROJECT_ID/tradingbot:$COMMIT_SHA'
